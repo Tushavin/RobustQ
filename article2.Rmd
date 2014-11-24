@@ -1,0 +1,255 @@
+---
+title: "Квалиметрические модели и методы в сфере услуг"
+author: "Тушавин В. А."
+date: "Sunday, November 23, 2014"
+output: html_document
+---
+
+Целью данной статьи является сравнение основных квалиметрических моделей и методов применительно к задаче оценки комплексного показателя качества услуг.
+
+В расчетах используются следующие [данные](article1.md) из статьи *Тушавин В. А. Робастный подход к оценке комплексного показателя качества ИТ-услуг // [Системы управления и информационные технологии](http://www.sbook.ru/suit/suit.htm). 2014. № 4 (58). С. 92–95.*:
+
+
+
+1. Таблица шкалированных показателей качества (td)
+2. Целевые значения показателей качества (minimum,target)
+3. Матрица рандомизированных коэффицентов (mtx)
+
+```{r}
+td<-readRDS("table1.RDS")
+minimum<-readRDS("minimum.RDS")
+target<-readRDS("target.RDS")
+mtx<-readRDS("mtx.RDS")
+
+```
+
+### Комплексный показатель качества как взвешенное среднее по Колмогорову
+
+В качестве весов используем матожидание случайных коэффициентов
+
+```{r}
+(coeff<-apply(mtx,2,mean))
+rm(mtx)
+```
+
+#### Cреднее арифметическое взвешенное
+
+```{r}
+td$M1<-apply(td[,2:6],1,FUN=function(x){weighted.mean(x,coeff)})
+test.t<-weighted.mean(target,coeff)
+test.m<-weighted.mean(minimum,coeff)
+(X1.t<-sum(td$M1>=test.t))
+(X1.m<-sum(td$M1>=test.m))
+X1.a<-td$M1>=test.t
+```
+
+#### Cреднее геометрическое взвешенное
+```{r}
+td$M2<-apply(td[,2:6],1,FUN=function(x){exp(weighted.mean(log(x),coeff))})
+test.t<-exp(weighted.mean(log(target),coeff))
+test.m<-exp(weighted.mean(log(minimum),coeff))
+(X2.t<-sum(td$M2>=test.t))
+(X2.m<-sum(td$M2>=test.m))
+X2.a<-td$M2>=test.t
+```
+
+#### Cреднее гармоническое взвешенное
+```{r}
+td$M3<-apply(td[,2:6],1,FUN=function(x){1/sum(coeff/x)})
+test.t<-1/sum(coeff/target)
+test.m<-1/sum(coeff/minimum)
+(X3.t<-sum(td$M3>=test.t))
+(X3.m<-sum(td$M3>=test.m))
+X3.a<-td$M3>=test.t
+```
+
+### Оценка комплексного показателя качества c помощью нечеткой логики
+
+
+Настроим систему:
+
+```{r}
+library(sets)
+sets_options("universe", seq(from = 0, to = 100, by = 0.1))
+variables <-set(
+    InTime=
+     fuzzy_variable(Bad=fuzzy_normal(mean=0,sd=30),
+                    Normal=fuzzy_normal(mean=70,sd=5),
+                    Good=fuzzy_normal(mean=100,sd=10)),
+    WO =
+           fuzzy_variable(Normal=fuzzy_normal(mean=0,sd=25),
+                    Good=fuzzy_normal(mean=100,sd=25)),
+    NIT1 =
+            fuzzy_variable(Bad = fuzzy_normal(mean=0,sd=2),
+                      Normal = fuzzy_normal(mean=23,sd=4),
+                      Good = fuzzy_normal(mean=100,sd=26)),
+    NIT2 =
+            fuzzy_variable(Bad = fuzzy_normal(mean=0,sd=8),
+                      Normal = fuzzy_normal(mean=60,sd=7),
+                      Good = fuzzy_normal(mean=100,sd=25)),
+
+    Rate =
+           fuzzy_variable(Bad=fuzzy_normal(mean=0,sd=7),
+          Normal=fuzzy_normal(mean=18,sd=5),
+          Good=fuzzy_normal(mean=100,sd=33)),
+    Service = fuzzy_variable(
+          Bad=fuzzy_normal(mean=0,sd=20),
+          Normal= fuzzy_normal(mean=65,sd=3),
+          Good=fuzzy_normal(mean=100,sd=10))
+
+    )
+ rules <-
+set(
+    fuzzy_rule(
+        NIT1 %is% Bad, Service %is% Bad),
+    fuzzy_rule(
+        NIT1 %is% Normal, Service %is% Normal),
+    fuzzy_rule(
+        NIT1 %is% Good, Service %is% Good),
+    fuzzy_rule(
+        NIT2 %is% Bad, Service %is% Bad),
+    fuzzy_rule(
+        NIT2 %is% Normal, Service %is% Normal),
+    fuzzy_rule(
+        NIT2 %is% Good, Service %is% Good),
+    fuzzy_rule(
+        InTime %is% Good && Rate  %is% Bad  && WO %is% Normal, Service %is% Bad), 
+    fuzzy_rule(
+        InTime %is% Good && Rate  %is% Bad  && WO %is% Good, Service %is% Bad), 
+    fuzzy_rule(
+        InTime %is% Good && Rate %is% Good && WO %is% Normal, Service %is% Good),
+    fuzzy_rule(
+        InTime %is% Good && Rate %is% Good && WO %is% Good, Service %is% Good),
+    fuzzy_rule(
+        InTime %is% Good && Rate %is% Normal && WO %is% Normal, Service %is% Normal),
+    fuzzy_rule(
+        InTime %is% Good && Rate %is% Normal && WO %is% Good, Service %is% Good),
+    fuzzy_rule(
+        InTime %is% Normal && Rate  %is% Bad && WO %is% Normal, Service %is% Bad),
+    fuzzy_rule(
+        InTime %is% Normal && Rate  %is% Bad && WO %is% Good, Service %is% Bad),
+    fuzzy_rule(
+        InTime %is% Normal && Rate %is% Good && WO %is% Normal, Service %is% Normal),
+    fuzzy_rule(
+        InTime %is% Normal && Rate %is% Good && WO %is% Good, Service %is% Good),
+    fuzzy_rule(
+        InTime %is% Normal && Rate %is% Normal && WO %is% Normal, Service %is% Normal),
+    fuzzy_rule(
+        InTime %is% Normal && Rate %is% Normal && WO %is% Good, Service %is% Normal),
+    fuzzy_rule(
+        InTime %is% Bad && Rate  %is% Bad && WO %is% Normal, Service %is% Bad), 
+    fuzzy_rule(
+        InTime %is% Bad && Rate  %is% Bad && WO %is% Good, Service %is% Bad), 
+    fuzzy_rule(
+        InTime %is% Bad && Rate %is% Good && WO %is% Normal, Service %is% Normal),
+    fuzzy_rule(
+        InTime %is% Bad && Rate %is% Good && WO %is% Good, Service %is% Good),
+    fuzzy_rule(
+        InTime %is% Bad && Rate %is% Normal && WO %is% Normal, Service %is% Bad),
+    fuzzy_rule(
+        InTime %is% Bad && Rate %is% Normal && WO %is% Good, Service %is% Bad)
+    )   
+system <- fuzzy_system(variables, rules)
+print(system)
+plot(system) 
+
+
+```
+
+Функция, проводящая дефаззификацию
+
+```{r}
+fuzzy.calc<-function(system,x,draw=FALSE) {
+  x<-round(as.vector(x,"double"),0)
+  names(x)<-c("InTime","WO","NIT1","NIT2","Rate") 
+  fi <- fuzzy_inference(system, x)
+if(draw) plot(fi)
+return(gset_defuzzify(fi, "centroid"))
+}
+
+```
+Рачеты для минимимально допустимого и целевого показателя
+
+```{r}
+(test.t<-fuzzy.calc(system,target*100,TRUE))
+(test.m<-fuzzy.calc(system,minimum*100,TRUE))
+```
+
+Расчеты для всех показателей в таблице
+
+```{r}
+td$F1<-apply(td[,2:6],1,FUN=function(x){fuzzy.calc(system,x*100)})
+sets_options("universe", NULL)
+(X4.t<-sum(td$F1>=test.t))
+(X4.m<-sum(td$F1>=test.m))
+X4.a<-td$F1>=test.t
+X5.a<-td$target>=0.05
+head(td)
+```
+
+
+
+```{r pic1,warning=FALSE}
+library(limma)
+c3 <- cbind(X1.a, X2.a, X3.a,X4.a,X5.a)
+a <- vennCounts(c3)
+vennDiagram(a, names = c("Ср. арифм.", "Ср.геом.", "Ср.гарм.","Нечетк.логика","Стохаст.доминир."),cex = 1)
+```
+
+### Прогнозирование комплексного показателя качества c помощью предиктивных моделей
+
+Подразумевается, что оценку комплексного показателя качества должны производить эксперты, после чего построив модель на обучающей выборке и выбрав потом наилучший метод с помощью верифицирующих данных модель должна быть проверена на тестовых данных.
+
+В данном случае мы используем оценку произведенную нечеткой логикой в качестве экспертной и пытаемся сравнить различные методы. Расчеты предназначены для демонстрации подходов, поскольку размер выборки слишком мал как для полноценного обучения, так и для верификации модели.
+
+Исследования о применимости различных моделей в практической деятельности опубликованы в статьях:
+
+*Тушавин В. А. Анализ качества ИТ-услуг с использованием классификационных деревьев // Экономика и менеджмент систем управления. 2013. № 4.1 (10). С. 211–217.*
+
+*Тушавин В. А. Моделирование показателей качества технической поддержки с использованием Random forest // Научная сессия ГУАП: Сб .докл.: В 3 ч. Ч. I. Технические науки. СПб.: ГУАП, 2013. С. 215–216.*
+
+```{r}
+set.seed(2014)
+study<-sample(1:nrow(td),nrow(td)/4*3)
+td$F2<-as.factor(round(td$F1/20,0)-ifelse(td$target<0.05,1,0))
+td.learn<-td[study,c(1:6,13)]
+td.test<-td[-study,c(1:6,13)]
+library(caret)
+```
+
+#### Нейронная сеть (single-hidden-layer neural network)
+```{r}
+library(nnet)
+mod1<-nnet(F2~Q1+Q2+Q3+Q4+Q5,data=td.learn,size=10,rang=0.1,decay = 5e-4,maxit=500)
+confusionMatrix(td.test$F2, predict(mod1, td.test[,2:6], type = "class"))
+```
+
+Схема нейронной сети (см. статью [Visualizing neural networks in R – update](https://beckmw.wordpress.com/2013/11/14/visualizing-neural-networks-in-r-update/))
+
+```{r xx,warning=FALSE}
+library(devtools)
+source_url('https://gist.githubusercontent.com/fawda123/7471137/raw/466c1474d0a505ff044412703516c34f1a4684a5/nnet_plot_update.r')
+plot.nnet(mod1)
+```
+
+
+
+#### Метод опорных векторов
+```{r}
+library(e1071)
+mod2<-svm(F2~Q1+Q2+Q3+Q4+Q5,data=td.learn,gamma=0.1)
+confusionMatrix(td.test$F2, predict(mod2, td.test[,2:6]))
+```
+
+#### Случайный лес
+```{r}
+require(randomForest)
+mod3<-randomForest(F2~Q1+Q2+Q3+Q4+Q5,data=td.learn,type="classification",ntree=500)
+confusionMatrix(td.test$F2, predict(mod3, td.test[,2:6]))
+```
+
+Информация о параметрах R
+
+```{r}
+sessionInfo()
+```
