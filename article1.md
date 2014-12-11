@@ -249,8 +249,8 @@ saveRDS(minimum,file="minimum.RDS")
 td$minimum<-NA
 td$target<-NA
 for(i in 1:nrow(td)) {
-td$target[i]<- sum(apply(mtx,1,FUN=function(x) { sum(x*td[i,2:5])>sum(x*target)}))/1000
-td$minimum[i]<-sum(apply(mtx,1,FUN=function(x) { sum(x*td[i,2:5])>sum(x*minimum)}))/1000
+td$target[i]<- sum(apply(mtx,1,FUN=function(x) { sum(x*td[i,2:6])>sum(x*target)}))/1000
+td$minimum[i]<-sum(apply(mtx,1,FUN=function(x) { sum(x*td[i,2:6])>sum(x*minimum)}))/1000
 }
 saveRDS(td,file="table1.RDS")
 ```
@@ -279,18 +279,18 @@ summary(lm(td$target~x))
 ## 
 ## Residuals:
 ##      Min       1Q   Median       3Q      Max 
-## -0.04656 -0.02556 -0.01393  0.01754  0.11781 
+## -0.74585 -0.02907  0.00884  0.13466  0.26362 
 ## 
 ## Coefficients:
-##              Estimate Std. Error t value Pr(>|t|)  
-## (Intercept) 0.0166770  0.0106905   1.560   0.1244  
-## x           0.0005434  0.0003152   1.724   0.0902 .
+##             Estimate Std. Error t value Pr(>|t|)    
+## (Intercept) 0.731149   0.054527  13.409  < 2e-16 ***
+## x           0.005233   0.001608   3.255  0.00193 ** 
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
 ## 
-## Residual standard error: 0.04018 on 56 degrees of freedom
-## Multiple R-squared:  0.0504,	Adjusted R-squared:  0.03345 
-## F-statistic: 2.972 on 1 and 56 DF,  p-value: 0.09021
+## Residual standard error: 0.205 on 56 degrees of freedom
+## Multiple R-squared:  0.1591,	Adjusted R-squared:  0.1441 
+## F-statistic:  10.6 on 1 and 56 DF,  p-value: 0.001925
 ```
 
 Зависимости от времени нет.

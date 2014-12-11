@@ -308,25 +308,25 @@ sets_options("universe", NULL)
 
 ```r
 X4.a<-td$F1>=test.t
-X5.a<-td$target>=0.05
+X5.a<-td$target>=0.6
 head(td)
 ```
 
 ```
 ##           YM        Q1        Q2        Q3        Q4        Q5 minimum
-## 1 2010-01-01 0.9155796 0.9842703 0.9553734 0.6296348 0.3710837   0.990
-## 2 2010-02-01 0.8835840 0.7035583 0.9010373 0.7462359 0.3248447   0.972
-## 3 2010-03-01 0.9221653 0.3843156 0.8768185 0.8236437 0.3037147   0.946
-## 4 2010-04-01 0.9893444 0.7336108 0.8591666 0.8379938 0.2560335   0.984
-## 5 2010-05-01 0.9884817 0.9716582 0.8846832 0.8176888 0.3435733   0.993
-## 6 2010-06-01 0.9872346 0.9794158 0.8708995 0.6474403 0.2999945   0.992
+## 1 2010-01-01 0.9155796 0.9842703 0.9553734 0.6296348 0.3710837       1
+## 2 2010-02-01 0.8835840 0.7035583 0.9010373 0.7462359 0.3248447       1
+## 3 2010-03-01 0.9221653 0.3843156 0.8768185 0.8236437 0.3037147       1
+## 4 2010-04-01 0.9893444 0.7336108 0.8591666 0.8379938 0.2560335       1
+## 5 2010-05-01 0.9884817 0.9716582 0.8846832 0.8176888 0.3435733       1
+## 6 2010-06-01 0.9872346 0.9794158 0.8708995 0.6474403 0.2999945       1
 ##   target        M1        M2        M3       F1
-## 1  0.052 0.6643431 0.6010675 0.5432283 82.00496
-## 2  0.000 0.5718998 0.5209940 0.4737111 85.97245
-## 3  0.000 0.4904200 0.4376388 0.4001608 87.86125
-## 4  0.005 0.5699192 0.4840922 0.4088285 90.18262
-## 5  0.124 0.6711205 0.5951406 0.5247149 90.49045
-## 6  0.063 0.6390514 0.5498810 0.4710350 81.55100
+## 1  1.000 0.6643431 0.6010675 0.5432283 82.00496
+## 2  0.245 0.5718998 0.5209940 0.4737111 85.97245
+## 3  0.001 0.4904200 0.4376388 0.4001608 87.86125
+## 4  0.302 0.5699192 0.4840922 0.4088285 90.18262
+## 5  1.000 0.6711205 0.5951406 0.5247149 90.49045
+## 6  0.966 0.6390514 0.5498810 0.4710350 81.55100
 ```
 
 
@@ -357,7 +357,7 @@ vennDiagram(a, names = c("Ср. арифм.", "Ср.геом.", "Ср.гарм."
 ```r
 set.seed(2014)
 study<-sample(1:nrow(td),nrow(td)/4*3)
-td$F2<-as.factor(round(td$F1/20,0)-ifelse(td$target<0.05,1,0))
+td$F2<-as.factor(round(td$F1/20,0)-ifelse(td$target<0.6,1,0))
 td.learn<-td[study,c(1:6,13)]
 td.test<-td[-study,c(1:6,13)]
 library(caret)
@@ -370,6 +370,7 @@ library(caret)
 
 #### Нейронная сеть (single-hidden-layer neural network)
 
+
 ```r
 library(nnet)
 mod1<-nnet(F2~Q1+Q2+Q3+Q4+Q5,data=td.learn,size=10,rang=0.1,decay = 5e-4,maxit=500)
@@ -377,95 +378,95 @@ mod1<-nnet(F2~Q1+Q2+Q3+Q4+Q5,data=td.learn,size=10,rang=0.1,decay = 5e-4,maxit=5
 
 ```
 ## # weights:  93
-## initial  value 44.826976 
-## iter  10 value 26.610772
-## iter  20 value 17.387609
-## iter  30 value 10.753589
-## iter  40 value 8.211552
-## iter  50 value 5.358490
-## iter  60 value 4.290155
-## iter  70 value 3.802618
-## iter  80 value 3.651335
-## iter  90 value 3.508545
-## iter 100 value 3.437607
-## iter 110 value 3.366812
-## iter 120 value 3.267821
-## iter 130 value 3.179507
-## iter 140 value 3.095979
-## iter 150 value 3.054828
-## iter 160 value 3.006749
-## iter 170 value 2.975979
-## iter 180 value 2.929396
-## iter 190 value 2.897558
-## iter 200 value 2.880427
-## iter 210 value 2.846285
-## iter 220 value 2.823517
-## iter 230 value 2.800761
-## iter 240 value 2.777676
-## iter 250 value 2.756034
-## iter 260 value 2.737409
-## iter 270 value 2.715663
-## iter 280 value 2.681985
-## iter 290 value 2.661123
-## iter 300 value 2.647712
-## iter 310 value 2.639947
-## iter 320 value 2.636216
-## iter 330 value 2.632493
-## iter 340 value 2.630283
-## iter 350 value 2.627902
-## iter 360 value 2.626920
-## iter 370 value 2.626378
-## iter 380 value 2.625886
-## iter 390 value 2.625597
-## iter 400 value 2.625431
-## iter 410 value 2.625185
-## iter 420 value 2.624918
-## iter 430 value 2.624782
-## iter 440 value 2.624586
-## iter 450 value 2.624440
-## iter 460 value 2.624313
-## iter 470 value 2.624155
-## iter 480 value 2.624013
-## iter 490 value 2.623836
-## iter 500 value 2.623703
-## final  value 2.623703 
+## initial  value 51.571966 
+## iter  10 value 18.141608
+## iter  20 value 13.336835
+## iter  30 value 9.137534
+## iter  40 value 3.330220
+## iter  50 value 2.021194
+## iter  60 value 1.530542
+## iter  70 value 1.394292
+## iter  80 value 1.295381
+## iter  90 value 1.256059
+## iter 100 value 1.242192
+## iter 110 value 1.221921
+## iter 120 value 1.207674
+## iter 130 value 1.200788
+## iter 140 value 1.186452
+## iter 150 value 1.160913
+## iter 160 value 1.146677
+## iter 170 value 1.138477
+## iter 180 value 1.131848
+## iter 190 value 1.128649
+## iter 200 value 1.121426
+## iter 210 value 1.114173
+## iter 220 value 1.109080
+## iter 230 value 1.104802
+## iter 240 value 1.100922
+## iter 250 value 1.098824
+## iter 260 value 1.094861
+## iter 270 value 1.093082
+## iter 280 value 1.091517
+## iter 290 value 1.090298
+## iter 300 value 1.089708
+## iter 310 value 1.088488
+## iter 320 value 1.086748
+## iter 330 value 1.081262
+## iter 340 value 1.077201
+## iter 350 value 1.075689
+## iter 360 value 1.074857
+## iter 370 value 1.074511
+## iter 380 value 1.073996
+## iter 390 value 1.073820
+## iter 400 value 1.073678
+## iter 410 value 1.073552
+## iter 420 value 1.073231
+## iter 430 value 1.072945
+## iter 440 value 1.072563
+## iter 450 value 1.072097
+## iter 460 value 1.071600
+## iter 470 value 1.071263
+## iter 480 value 1.070947
+## iter 490 value 1.070760
+## iter 500 value 1.070659
+## final  value 1.070659 
 ## stopped after 500 iterations
 ```
 
 ```r
-confusionMatrix(td.test$F2, predict(mod1, td.test[,2:6], type = "class"))
+confusionMatrix(td.test$F2, factor(predict(mod1, td.test[,2:6], type = "class"),levels=c("3","4","5")))
 ```
 
 ```
 ## Confusion Matrix and Statistics
 ## 
 ##           Reference
-## Prediction 3 4 5
-##          3 8 1 1
-##          4 0 4 0
-##          5 0 0 1
+## Prediction  3  4  5
+##          3  0  1  0
+##          4  0 11  1
+##          5  0  0  2
 ## 
 ## Overall Statistics
 ##                                           
 ##                Accuracy : 0.8667          
 ##                  95% CI : (0.5954, 0.9834)
-##     No Information Rate : 0.5333          
-##     P-Value [Acc > NIR] : 0.007594        
+##     No Information Rate : 0.8             
+##     P-Value [Acc > NIR] : 0.398           
 ##                                           
-##                   Kappa : 0.7561          
+##                   Kappa : 0.6             
 ##  Mcnemar's Test P-Value : NA              
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: 3 Class: 4 Class: 5
-## Sensitivity            1.0000   0.8000  0.50000
-## Specificity            0.7143   1.0000  1.00000
-## Pos Pred Value         0.8000   1.0000  1.00000
-## Neg Pred Value         1.0000   0.9091  0.92857
-## Prevalence             0.5333   0.3333  0.13333
-## Detection Rate         0.5333   0.2667  0.06667
-## Detection Prevalence   0.6667   0.2667  0.06667
-## Balanced Accuracy      0.8571   0.9000  0.75000
+## Sensitivity                NA   0.9167   0.6667
+## Specificity           0.93333   0.6667   1.0000
+## Pos Pred Value             NA   0.9167   1.0000
+## Neg Pred Value             NA   0.6667   0.9231
+## Prevalence            0.00000   0.8000   0.2000
+## Detection Rate        0.00000   0.7333   0.1333
+## Detection Prevalence  0.06667   0.8000   0.1333
+## Balanced Accuracy          NA   0.7917   0.8333
 ```
 
 Схема нейронной сети (см. статью [Visualizing neural networks in R – update](https://beckmw.wordpress.com/2013/11/14/visualizing-neural-networks-in-r-update/))
@@ -513,7 +514,7 @@ plot.nnet(mod1)
 ```r
 library(e1071)
 mod2<-svm(F2~Q1+Q2+Q3+Q4+Q5,data=td.learn,gamma=0.1)
-confusionMatrix(td.test$F2, predict(mod2, td.test[,2:6]))
+confusionMatrix(td.test$F2, factor(predict(mod2, td.test[,2:6]),levels=c("3","4","5")))
 ```
 
 ```
@@ -521,14 +522,14 @@ confusionMatrix(td.test$F2, predict(mod2, td.test[,2:6]))
 ## 
 ##           Reference
 ## Prediction  3  4  5
-##          3 10  0  0
-##          4  4  0  0
-##          5  1  0  0
+##          3  0  1  0
+##          4  0 12  0
+##          5  0  2  0
 ## 
 ## Overall Statistics
 ##                                           
-##                Accuracy : 0.6667          
-##                  95% CI : (0.3838, 0.8818)
+##                Accuracy : 0.8             
+##                  95% CI : (0.5191, 0.9567)
 ##     No Information Rate : 1               
 ##     P-Value [Acc > NIR] : 1               
 ##                                           
@@ -538,13 +539,13 @@ confusionMatrix(td.test$F2, predict(mod2, td.test[,2:6]))
 ## Statistics by Class:
 ## 
 ##                      Class: 3 Class: 4 Class: 5
-## Sensitivity            0.6667       NA       NA
-## Specificity                NA   0.7333  0.93333
+## Sensitivity                NA      0.8       NA
+## Specificity           0.93333       NA   0.8667
 ## Pos Pred Value             NA       NA       NA
 ## Neg Pred Value             NA       NA       NA
-## Prevalence             1.0000   0.0000  0.00000
-## Detection Rate         0.6667   0.0000  0.00000
-## Detection Prevalence   0.6667   0.2667  0.06667
+## Prevalence            0.00000      1.0   0.0000
+## Detection Rate        0.00000      0.8   0.0000
+## Detection Prevalence  0.06667      0.8   0.1333
 ## Balanced Accuracy          NA       NA       NA
 ```
 
@@ -562,7 +563,7 @@ require(randomForest)
 
 ```r
 mod3<-randomForest(F2~Q1+Q2+Q3+Q4+Q5,data=td.learn,type="classification",ntree=500)
-confusionMatrix(td.test$F2, predict(mod3, td.test[,2:6]))
+confusionMatrix(td.test$F2, factor(predict(mod2, td.test[,2:6]),levels=c("3","4","5")))
 ```
 
 ```
@@ -570,31 +571,31 @@ confusionMatrix(td.test$F2, predict(mod3, td.test[,2:6]))
 ## 
 ##           Reference
 ## Prediction  3  4  5
-##          3 10  0  0
-##          4  3  1  0
-##          5  0  0  1
+##          3  0  1  0
+##          4  0 12  0
+##          5  0  2  0
 ## 
 ## Overall Statistics
 ##                                           
 ##                Accuracy : 0.8             
 ##                  95% CI : (0.5191, 0.9567)
-##     No Information Rate : 0.8667          
-##     P-Value [Acc > NIR] : 0.8708          
+##     No Information Rate : 1               
+##     P-Value [Acc > NIR] : 1               
 ##                                           
-##                   Kappa : 0.5             
+##                   Kappa : 0               
 ##  Mcnemar's Test P-Value : NA              
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: 3 Class: 4 Class: 5
-## Sensitivity            0.7692  1.00000  1.00000
-## Specificity            1.0000  0.78571  1.00000
-## Pos Pred Value         1.0000  0.25000  1.00000
-## Neg Pred Value         0.4000  1.00000  1.00000
-## Prevalence             0.8667  0.06667  0.06667
-## Detection Rate         0.6667  0.06667  0.06667
-## Detection Prevalence   0.6667  0.26667  0.06667
-## Balanced Accuracy      0.8846  0.89286  1.00000
+## Sensitivity                NA      0.8       NA
+## Specificity           0.93333       NA   0.8667
+## Pos Pred Value             NA       NA       NA
+## Neg Pred Value             NA       NA       NA
+## Prevalence            0.00000      1.0   0.0000
+## Detection Rate        0.00000      0.8   0.0000
+## Detection Prevalence  0.06667      0.8   0.1333
+## Balanced Accuracy          NA       NA       NA
 ```
 
 Информация о параметрах R

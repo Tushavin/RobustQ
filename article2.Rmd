@@ -185,7 +185,7 @@ sets_options("universe", NULL)
 (X4.t<-sum(td$F1>=test.t))
 (X4.m<-sum(td$F1>=test.m))
 X4.a<-td$F1>=test.t
-X5.a<-td$target>=0.05
+X5.a<-td$target>=0.6
 head(td)
 ```
 
@@ -213,17 +213,18 @@ vennDiagram(a, names = c("Ср. арифм.", "Ср.геом.", "Ср.гарм."
 ```{r}
 set.seed(2014)
 study<-sample(1:nrow(td),nrow(td)/4*3)
-td$F2<-as.factor(round(td$F1/20,0)-ifelse(td$target<0.05,1,0))
+td$F2<-as.factor(round(td$F1/20,0)-ifelse(td$target<0.6,1,0))
 td.learn<-td[study,c(1:6,13)]
 td.test<-td[-study,c(1:6,13)]
 library(caret)
 ```
 
 #### Нейронная сеть (single-hidden-layer neural network)
+
 ```{r}
 library(nnet)
 mod1<-nnet(F2~Q1+Q2+Q3+Q4+Q5,data=td.learn,size=10,rang=0.1,decay = 5e-4,maxit=500)
-confusionMatrix(td.test$F2, predict(mod1, td.test[,2:6], type = "class"))
+confusionMatrix(td.test$F2, factor(predict(mod1, td.test[,2:6], type = "class"),levels=c("3","4","5")))
 ```
 
 Схема нейронной сети (см. статью [Visualizing neural networks in R – update](https://beckmw.wordpress.com/2013/11/14/visualizing-neural-networks-in-r-update/))
@@ -240,14 +241,14 @@ plot.nnet(mod1)
 ```{r}
 library(e1071)
 mod2<-svm(F2~Q1+Q2+Q3+Q4+Q5,data=td.learn,gamma=0.1)
-confusionMatrix(td.test$F2, predict(mod2, td.test[,2:6]))
+confusionMatrix(td.test$F2, factor(predict(mod2, td.test[,2:6]),levels=c("3","4","5")))
 ```
 
 #### Случайный лес
 ```{r}
 require(randomForest)
 mod3<-randomForest(F2~Q1+Q2+Q3+Q4+Q5,data=td.learn,type="classification",ntree=500)
-confusionMatrix(td.test$F2, predict(mod3, td.test[,2:6]))
+confusionMatrix(td.test$F2, factor(predict(mod2, td.test[,2:6]),levels=c("3","4","5")))
 ```
 
 Информация о параметрах R
